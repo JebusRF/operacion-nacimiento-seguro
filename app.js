@@ -1,24 +1,23 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
-getFirestore,
-collection,
-addDoc,
-query,
-orderBy,
-limit,
-getDocs
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  orderBy,
+  limit
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
 
-apiKey: "TU_APIKEY",
+apiKey: "AIzaSyD7pXcBMqe7fLKAFVgw7o_u2gXkE1893QE",
 authDomain: "codigo-parto-gamificado.firebaseapp.com",
 projectId: "codigo-parto-gamificado",
 storageBucket: "codigo-parto-gamificado.firebasestorage.app",
 messagingSenderId: "844566506106",
-appId: "TU_APP_ID"
+appId: "1:844566506106:web:3ec87d91c0e798888769c3"
 
 };
 
