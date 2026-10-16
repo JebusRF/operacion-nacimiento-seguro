@@ -1,18 +1,3 @@
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
-import {
-getFirestore,
-collection,
-addDoc,
-query,
-orderBy,
-limit,
-getDocs,
-onSnapshot
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
@@ -29,11 +14,11 @@ from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const firebaseConfig = {
 
 apiKey: "TU_APIKEY",
-authDomain: "TU_AUTHDOMAIN",
-projectId: "TU_PROJECTID",
-storageBucket: "TU_STORAGEBUCKET",
-messagingSenderId: "TU_MESSAGING",
-appId: "TU_APPID"
+authDomain: "codigo-parto-gamificado.firebaseapp.com",
+projectId: "codigo-parto-gamificado",
+storageBucket: "codigo-parto-gamificado.firebasestorage.app",
+messagingSenderId: "844566506106",
+appId: "TU_APP_ID"
 
 };
 
@@ -45,177 +30,223 @@ let nivel=0;
 let puntaje=0;
 
 let inicioTiempo;
-let timerGeneral;
-let timerPregunta;
-
+let cronometro;
+let relojPregunta;
 let segundosPregunta=15;
 
 const insignias=[];
 
-const preguntas=[
+const etapas=[
 
 {
-titulo:"🚨 Emergencia identificada",
-avance:"20%",
+titulo:"🚨 Emergencia Identificada",
+avance:20,
+
+pregunta:
+"Observas una embarazada de término con contracciones intensas y pujos involuntarios. ¿Qué haces primero?",
+
+correcta:1,
+
+explicacion:
+"Activar el 131 permite coordinar ayuda especializada mientras evalúas la situación.",
+
 insignia:"🏅 Primer Respondedor",
 
-texto:"Observas una embarazada de término pujando en una plaza. ¿Cuál es la primera acción adecuada?",
-
-correcta:0,
-
 opciones:[
-"Activar el 131",
 "Llamar familiares",
-"No intervenir",
-"Grabar con el celular"
+"Activar el 131",
+"Esperar",
+"Trasladar inmediatamente"
 ]
 },
 
 {
-titulo:"📞 Coordinación de ayuda",
-avance:"40%",
+titulo:"📞 Coordinación de Ayuda",
+avance:40,
+
+pregunta:
+"La mujer refiere deseos intensos de pujar. ¿Qué debes evaluar?",
+
+correcta:2,
+
+explicacion:
+"Lo más importante es determinar si el nacimiento es inminente.",
+
 insignia:"🏅 Coordinador de Emergencia",
 
-texto:"La mujer refiere pujos intensos. ¿Qué debes evaluar prioritariamente?",
-
-correcta:0,
-
 opciones:[
-"Si el nacimiento parece inminente",
-"Grupo sanguíneo",
-"Peso pregestacional",
-"Previsión"
+"Su previsión",
+"Número de controles",
+"Si el parto es inminente",
+"Grupo sanguíneo"
 ]
 },
 
 {
 titulo:"👶 Nacimiento",
-avance:"60%",
+avance:60,
+
+pregunta:
+"Compruebas que el bebé nacerá antes que llegue la ambulancia. ¿Cuál es la conducta adecuada?",
+
+correcta:3,
+
+explicacion:
+"Se debe favorecer la salida espontánea evitando tracciones o maniobras innecesarias.",
+
 insignia:"🏅 Asistente del Nacimiento",
 
-texto:"El nacimiento es inminente y no existe traslado seguro. ¿Qué haces?",
-
-correcta:1,
-
 opciones:[
+"Retrasar el parto",
+"Empujar abdomen",
 "Tirar del bebé",
-"Favorecer la salida espontánea",
-"Comprimir abdomen",
-"Suspender pujos"
+"Favorecer salida espontánea"
 ]
 },
 
 {
 titulo:"🍼 Atención Neonatal",
-avance:"80%",
-insignia:"🏅 Protector Neonatal",
+avance:80,
 
-texto:"El recién nacido acaba de nacer. ¿Qué acción es prioritaria?",
+pregunta:
+"El recién nacido llora al nacer. ¿Cuál es la prioridad?",
 
 correcta:0,
 
+explicacion:
+"La pérdida de calor es uno de los principales riesgos del recién nacido.",
+
+insignia:"🏅 Protector Neonatal",
+
 opciones:[
-"Secar y mantener temperatura",
-"Bañarlo",
+"Secar y evitar hipotermia",
+"Pesar al RN",
 "Separarlo de la madre",
-"Pesarlo"
+"Bañarlo"
 ]
 },
 
 {
 titulo:"🤱 Cuidados Postparto",
-avance:"100%",
+avance:100,
+
+pregunta:
+"Mientras llega la ambulancia, ¿qué debes vigilar?",
+
+correcta:1,
+
+explicacion:
+"El sangrado materno y el bienestar neonatal requieren vigilancia continua.",
+
 insignia:"🏅 Guardián Madre-Hijo",
 
-texto:"Mientras llega la ambulancia debes vigilar:",
-
-correcta:0,
-
 opciones:[
-"Sangrado materno y bienestar neonatal",
-"Solo a la madre",
-"Solo al bebé",
-"Nada"
+"Documentación",
+"Bienestar materno y neonatal",
+"Ropa de la madre",
+"Alimentación complementaria"
 ]
 }
 
 ];
 
-document.getElementById("btnIniciar")
+document
+.getElementById("btnIniciar")
 .addEventListener("click", iniciarJuego);
 
 function iniciarJuego(){
 
-jugador=document.getElementById("nombre").value;
+jugador=
+document.getElementById("nombre").value.trim();
 
-if(!jugador){
+if(jugador===""){
 alert("Ingresa tu nombre");
 return;
 }
 
-document.getElementById("inicio").classList.add("hidden");
-document.getElementById("juego").classList.remove("hidden");
+document
+.getElementById("inicio")
+.classList.add("hidden");
+
+document
+.getElementById("juego")
+.classList.remove("hidden");
 
 inicioTiempo=Date.now();
 
-timerGeneral=setInterval(actualizarCronometro,1000);
+cronometro=
+setInterval(actualizarCronometro,1000);
 
-mostrarPregunta();
+mostrarNivel();
 
 }
 
 function actualizarCronometro(){
 
-const tiempo=Math.floor(
-(Date.now()-inicioTiempo)/1000
-);
+const t =
+Math.floor((Date.now()-inicioTiempo)/1000);
 
-let m=String(Math.floor(tiempo/60)).padStart(2,"0");
-let s=String(tiempo%60).padStart(2,"0");
+const m =
+String(Math.floor(t/60)).padStart(2,"0");
 
-document.getElementById("cronometro").textContent=`${m}:${s}`;
+const s =
+String(t%60).padStart(2,"0");
+
+document.getElementById("cronometro")
+.textContent=`${m}:${s}`;
+
 }
 
-function mostrarPregunta(){
+function mostrarNivel(){
 
-const p=preguntas[nivel];
+const e=etapas[nivel];
 
-document.getElementById("etapa").textContent=p.titulo;
-document.getElementById("avanceTexto").textContent=p.avance;
-document.getElementById("barra").style.width=p.avance;
-document.getElementById("pregunta").textContent=p.texto;
+document.getElementById("etapa")
+.textContent=e.titulo;
+
+document.getElementById("pregunta")
+.textContent=e.pregunta;
+
+document.getElementById("barra")
+.style.width=e.avance+"%";
+
+document.getElementById("avanceTexto")
+.textContent=e.avance+"% completado";
 
 let html="";
 
-p.opciones.forEach((opcion,i)=>{
+e.opciones.forEach((o,i)=>{
 
 html+=`
-<button onclick="window.responder(${i})">
-${opcion}
+<button onclick="responder(${i})">
+${o}
 </button>
 `;
 
 });
 
-document.getElementById("opciones").innerHTML=html;
+document.getElementById("opciones")
+.innerHTML=html;
 
 segundosPregunta=15;
 
-document.getElementById("tiempoPregunta").textContent=15;
+document.getElementById("tiempoPregunta")
+.textContent=segundosPregunta;
 
-clearInterval(timerPregunta);
+clearInterval(relojPregunta);
 
-timerPregunta=setInterval(()=>{
+relojPregunta=setInterval(()=>{
 
 segundosPregunta--;
 
-document.getElementById("tiempoPregunta").textContent=segundosPregunta;
+document.getElementById("tiempoPregunta")
+.textContent=segundosPregunta;
 
 if(segundosPregunta<=0){
 
-clearInterval(timerPregunta);
+clearInterval(relojPregunta);
 
-window.responder(-1);
+responder(-1);
 
 }
 
@@ -225,75 +256,105 @@ window.responder(-1);
 
 window.responder=function(indice){
 
-clearInterval(timerPregunta);
+clearInterval(relojPregunta);
 
-if(indice===preguntas[nivel].correcta){
+const e=etapas[nivel];
 
-puntaje+=100;
+if(indice===e.correcta){
 
-insignias.push(
-preguntas[nivel].insignia
-);
+const bonus=segundosPregunta*5;
+
+puntaje += 100 + bonus;
+
+insignias.push(e.insignia);
 
 actualizarInsignias();
+
+alert(
+`✅ Correcto\n\n${e.explicacion}\n\n+${100+bonus} puntos`
+);
+
+}
+else{
+
+alert(
+`❌ Incorrecto\n\n${e.explicacion}`
+);
 
 }
 
 nivel++;
 
-if(nivel<preguntas.length){
-mostrarPregunta();
+if(nivel<etapas.length){
+
+mostrarNivel();
+
 }
 else{
+
 finalizar();
+
 }
 
 }
 
 function actualizarInsignias(){
 
-let html="";
-
-insignias.forEach(i=>{
-html+=`<li>${i}</li>`;
-});
-
-document.getElementById("listaInsignias").innerHTML=html;
+document.getElementById("listaInsignias")
+.innerHTML =
+insignias.map(i=>`<li>${i}</li>`).join("");
 
 }
 
 async function finalizar(){
 
-clearInterval(timerGeneral);
+clearInterval(cronometro);
 
-const tiempo=Math.floor(
+const tiempo =
+Math.floor(
 (Date.now()-inicioTiempo)/1000
 );
 
-const bonus=Math.max(
+const bonusFinal =
+Math.max(
 0,
 300-tiempo
 );
 
-puntaje+=bonus;
+puntaje += bonusFinal;
 
 await addDoc(
+
 collection(db,"ranking"),
+
 {
 nombre:jugador,
 puntaje,
 tiempo,
 fecha:new Date()
 }
+
 );
 
-document.getElementById("juego").classList.add("hidden");
-document.getElementById("final").classList.remove("hidden");
+document
+.getElementById("juego")
+.classList.add("hidden");
 
-document.getElementById("resultado").innerHTML=`
-<p><b>${jugador}</b></p>
+document
+.getElementById("final")
+.classList.remove("hidden");
+
+document.getElementById("resultado")
+.innerHTML=`
+
+<h3>${jugador}</h3>
+
 <p>⭐ Puntaje: <b>${puntaje}</b></p>
-<p>⏱️ Tiempo: <b>${tiempo} segundos</b></p>
+
+<p>⏱️ Tiempo: <b>${tiempo}s</b></p>
+
+<p>🏅 Insignias: ${insignias.length}/5</p>
+
 `;
 
 cargarRanking();
@@ -319,356 +380,7 @@ const d=doc.data();
 
 html+=`
 <li>
-${d.nombre}
-⭐ ${d.puntaje}
-⏱️ ${d.tiempo}s
-</li>
-`;
-
-});
-
-document.getElementById("ranking").innerHTML=html;
-
-}
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-const SESSION = "MAGISTER_GAMIFICACION";
-
-let nombre = "";
-let nivel = 0;
-let puntaje = 0;
-let inicio;
-let intervaloGeneral;
-let intervaloPregunta;
-let segundosPregunta = 15;
-
-const insignias = [];
-
-const preguntas = [
-
-{
-titulo:"🚨 Emergencia Identificada",
-avance:"20%",
-insignia:"🏅 Primer Respondedor",
-
-texto:"Vas caminando por una plaza y observas a una mujer embarazada de término sentada en una banca. Presenta contracciones intensas, pujos involuntarios y manifiesta que siente que su bebé ya viene. ¿Cuál es la acción PRIORITARIA?",
-
-correcta:1,
-
-opciones:[
-"Llamar a un familiar para que se haga cargo",
-"Activar el sistema de emergencia (131)",
-"Subirla inmediatamente a un vehículo particular",
-"Esperar para observar la evolución"
-]
-},
-
-{
-titulo:"📞 Coordinación de Ayuda",
-avance:"40%",
-insignia:"🏅 Coordinador de Emergencia",
-
-texto:"Mientras hablas con la central, la mujer refiere una necesidad irresistible de pujar. ¿Qué evaluación es más importante en este momento?",
-
-correcta:2,
-
-opciones:[
-"Preguntar previsión de salud",
-"Preguntar cuántos embarazos previos tiene",
-"Evaluar si el nacimiento es inminente",
-"Buscar su ficha clínica"
-]
-},
-
-{
-titulo:"👶 Nacimiento",
-avance:"60%",
-insignia:"🏅 Asistente del Nacimiento",
-
-texto:"Compruebas que el nacimiento ocurrirá antes de que llegue la ambulancia. ¿Cuál es la conducta más adecuada?",
-
-correcta:3,
-
-opciones:[
-"Intentar retrasar el parto",
-"Aplicar presión abdominal para acelerar la salida",
-"Traccionar suavemente la cabeza fetal",
-"Favorecer la salida espontánea del recién nacido"
-]
-},
-
-{
-titulo:"🍼 Atención Neonatal",
-avance:"80%",
-insignia:"🏅 Protector Neonatal",
-
-texto:"El recién nacido nace vigoroso y llora espontáneamente. Debido al ambiente exterior y la temperatura ambiental, ¿cuál es la prioridad inmediata?",
-
-correcta:0,
-
-opciones:[
-"Secar cuidadosamente y prevenir la pérdida de calor",
-"Realizar peso y talla",
-"Separarlo de su madre para observarlo",
-"Lavar al recién nacido"
-]
-},
-
-{
-titulo:"🤱 Cuidados Postparto",
-avance:"100%",
-insignia:"🏅 Guardián Madre-Hijo",
-
-texto:"Mientras esperan la llegada del equipo de emergencia, ¿qué aspecto requiere vigilancia continua?",
-
-correcta:1,
-
-opciones:[
-"El color de la ropa de la madre",
-"El bienestar materno y neonatal, incluido el sangrado",
-"La alimentación complementaria del recién nacido",
-"Completar documentos clínicos"
-]
-}
-
-];
-
-document
-.getElementById("btnIniciar")
-.addEventListener("click", iniciarJuego);
-
-function iniciarJuego(){
-
-nombre =
-document.getElementById("nombre").value;
-
-if(!nombre){
-alert("Ingresa tu nombre");
-return;
-}
-
-document
-.getElementById("inicio")
-.classList.add("hidden");
-
-document
-.getElementById("juego")
-.classList.remove("hidden");
-
-inicio = Date.now();
-
-intervaloGeneral =
-setInterval(actualizarCronometro,1000);
-
-mostrarPregunta();
-
-}
-
-function actualizarCronometro(){
-
-const seg =
-Math.floor(
-(Date.now()-inicio)/1000
-);
-
-const m =
-String(Math.floor(seg/60))
-.padStart(2,"0");
-
-const s =
-String(seg%60)
-.padStart(2,"0");
-
-document
-.getElementById("cronometro")
-.innerText = `${m}:${s}`;
-
-}
-
-function mostrarPregunta(){
-
-const etapa = etapas[nivel];
-
-document
-.getElementById("etapa")
-.innerText = etapa.etapa;
-
-document
-.getElementById("avance")
-.innerText = etapa.avance;
-
-document
-.getElementById("barra")
-.style.width = etapa.avance;
-
-document
-.getElementById("pregunta")
-.innerText = etapa.pregunta;
-
-let html="";
-
-etapa.opciones.forEach((op,i)=>{
-
-html += `
-<button onclick="responder(${i})">
-${op}
-</button>
-`;
-
-});
-
-document
-.getElementById("opciones")
-.innerHTML = html;
-
-segundosPregunta = 15;
-
-document
-.getElementById("tiempoPregunta")
-.innerText = segundosPregunta;
-
-clearInterval(intervaloPregunta);
-
-intervaloPregunta =
-setInterval(()=>{
-
-segundosPregunta--;
-
-document
-.getElementById("tiempoPregunta")
-.innerText = segundosPregunta;
-
-if(segundosPregunta<=0){
-
-clearInterval(intervaloPregunta);
-
-responder(-1);
-
-}
-
-},1000);
-
-}
-
-window.responder = function(indice){
-
-clearInterval(intervaloPregunta);
-
-if(indice === etapas[nivel].correcta){
-
-puntaje += 100;
-
-insignias.push(
-etapas[nivel].insignia
-);
-
-actualizarInsignias();
-
-}
-
-nivel++;
-
-if(nivel < etapas.length){
-
-mostrarPregunta();
-
-}
-else{
-
-finalizar();
-
-}
-
-}
-
-function actualizarInsignias(){
-
-let html="";
-
-insignias.forEach(i=>{
-html += `<li>${i}</li>`;
-});
-
-document
-.getElementById("listaInsignias")
-.innerHTML = html;
-
-}
-
-async function finalizar(){
-
-clearInterval(intervaloGeneral);
-
-const tiempo =
-Math.floor(
-(Date.now()-inicio)/1000
-);
-
-const bonus =
-Math.max(0,300-tiempo);
-
-puntaje += bonus;
-
-await addDoc(
-collection(db,"ranking"),
-{
-nombre,
-puntaje,
-tiempo,
-session:SESSION,
-fecha:new Date()
-}
-);
-
-document
-.getElementById("juego")
-.classList.add("hidden");
-
-document
-.getElementById("final")
-.classList.remove("hidden");
-
-document
-.getElementById("resultado")
-.innerHTML=`
-
-👤 <b>${nombre}</b><br><br>
-
-⭐ Puntaje: <b>${puntaje}</b><br>
-
-⏱️ Tiempo: <b>${tiempo}s</b><br><br>
-
-🏅 Insignias obtenidas: ${insignias.length}
-
-`;
-
-cargarRanking();
-
-}
-
-async function cargarRanking(){
-
-const q = query(
-collection(db,"ranking"),
-orderBy("puntaje","desc"),
-orderBy("tiempo","asc"),
-limit(10)
-);
-
-const snapshot =
-await getDocs(q);
-
-let html="";
-
-snapshot.forEach(doc=>{
-
-const d=doc.data();
-
-html += `
-<li>
-${d.nombre}
+🏆 ${d.nombre}
  | ⭐ ${d.puntaje}
  | ⏱️ ${d.tiempo}s
 </li>
@@ -676,27 +388,7 @@ ${d.nombre}
 
 });
 
-document
-.getElementById("ranking")
-.innerHTML = html;
+document.getElementById("ranking")
+.innerHTML=html;
 
 }
-
-onSnapshot(
-collection(db,"ranking"),
-(snapshot)=>{
-
-let total=0;
-
-snapshot.forEach(()=>{
-total++;
-});
-
-document
-.getElementById("participantes")
-.innerText = total;
-document
-.getElementById("finalizados")
-.innerText = total;
-
-});
