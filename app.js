@@ -455,7 +455,27 @@ async function finalizarMision() {
 
   juegoDiv.classList.add("hidden");
   finalDiv.classList.remove("hidden");
+confetti({
+  particleCount: 150,
+  spread: 90,
+  origin: { y: 0.6 }
+});
 
+setTimeout(() => {
+  confetti({
+    particleCount: 100,
+    angle: 60,
+    spread: 70,
+    origin: { x: 0 }
+  });
+
+  confetti({
+    particleCount: 100,
+    angle: 120,
+    spread: 70,
+    origin: { x: 1 }
+  });
+}, 500);
   resultadoEl.innerHTML = `
     <h3>${nombreJugador}</h3>
 
