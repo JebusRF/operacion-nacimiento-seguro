@@ -3,29 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Código Parto Extrahospitalario</title>
+<title>🚑 Operación Nacimiento Seguro</title>
 
-style.css
-
-app.jsscript>
-
+<link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
 <div class="container">
 
-<h1>🚑 Código Parto Extrahospitalario</h1>
+<h1>🚑 Operación Nacimiento Seguro</h1>
 
 <div id="inicio" class="card">
 
-<h2>Bienvenido</h2>
+<h2>Desafío Gamificado</h2>
 
-<input
-id="nombre"
-placeholder="Escribe tu nombre">
+<p>
+Mantén seguras a una madre y su recién nacido en una situación de parto extrahospitalario.
+</p>
+
+<input id="nombre" placeholder="Ingresa tu nombre">
 
 <button id="btnIniciar">
-Comenzar desafío
+Comenzar misión
 </button>
 
 </div>
@@ -33,17 +33,8 @@ Comenzar desafío
 <div id="juego" class="card hidden">
 
 <div class="topbar">
-
-<div>
-⏱️ Tiempo total:
-<span id="cronometro">00:00</span>
-</div>
-
-<div>
-⌛ Pregunta:
-<span id="tiempoPregunta">15</span>s
-</div>
-
+<div>⏱️ <span id="cronometro">00:00</span></div>
+<div>⌛ <span id="tiempoPregunta">15</span>s</div>
 </div>
 
 <h3 id="etapa"></h3>
@@ -52,14 +43,14 @@ Comenzar desafío
 <div id="barra"></div>
 </div>
 
-<p id="avance"></p>
+<h4 id="avanceTexto"></h4>
 
 <h2 id="pregunta"></h2>
 
 <div id="opciones"></div>
 
-<div class="insignias">
-<h4>🏅 Insignias obtenidas</h4>
+<div class="badges">
+<h3>🏅 Insignias</h3>
 <ul id="listaInsignias"></ul>
 </div>
 
@@ -69,7 +60,7 @@ Comenzar desafío
 
 <h2>🏆 Resultado Final</h2>
 
-<p id="resultado"></p>
+<div id="resultado"></div>
 
 <h3>Ranking en Vivo</h3>
 
@@ -77,38 +68,23 @@ Comenzar desafío
 
 <hr>
 
-<h3>🎓 ¿Qué acabas de experimentar?</h3>
+<h3>🎓 Lo que acabas de experimentar</h3>
 
 <ul>
 <li>✅ Narrativa</li>
 <li>✅ Competencia</li>
-<li>✅ Feedback inmediato</li>
+<li>✅ Retroalimentación inmediata</li>
+<li>✅ Ranking social</li>
 <li>✅ Progresión</li>
-<li>✅ Recompensas</li>
 <li>✅ Insignias</li>
 <li>✅ Presión temporal</li>
-<li>✅ Ranking social</li>
 </ul>
 
 </div>
 
-<div class="card">
-
-<h3>📊 Sesión</h3>
-
-<p>
-👥 Participantes:
-<span id="participantes">0</span>
-</p>
-
-<p>
-✅ Finalizados:
-<span id="finalizados">0</span>
-</p>
-
 </div>
 
-</div>
+<script type="module" src="app.js"></script>
 
 </body>
 </html>
