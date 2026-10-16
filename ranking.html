@@ -1,1 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>🏆 Ranking en Vivo</title>
+
+<style>
+
+body{
+font-family:Calibri, Arial, sans-serif;
+background:#f4f6f9;
+margin:0;
+padding:20px;
+}
+
+.container{
+max-width:1000px;
+margin:auto;
+}
+
+.card{
+background:white;
+padding:25px;
+border-radius:15px;
+margin-bottom:20px;
+box-shadow:0 2px 12px rgba(0,0,0,.10);
+}
+
+h1{
+text-align:center;
+color:#e91e63;
+}
+
+.stats{
+display:flex;
+gap:20px;
+justify-content:center;
+flex-wrap:wrap;
+margin-bottom:20px;
+}
+
+.stat{
+background:#eef7ff;
+padding:15px 25px;
+border-radius:12px;
+font-size:20px;
+font-weight:bold;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+}
+
+th{
+background:#1976d2;
+color:white;
+padding:12px;
+font-size:18px;
+}
+
+td{
+padding:12px;
+border-bottom:1px solid #ddd;
+font-size:18px;
+text-align:center;
+}
+
+.gold{
+background:#fff8e1;
+}
+
+.silver{
+background:#f5f5f5;
+}
+
+.bronze{
+background:#fff3e0;
+}
+
+#ultimo{
+font-size:20px;
+font-weight:bold;
+color:#2e7d32;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="card">
+
+<h1>🏆 Operación Nacimiento Seguro</h1>
+
+</div>
+
+<div class="card">
+
+<div class="stats">
+
+<div class="stat">
+👥 Participantes:
+<span id="participantes">0</span>
+</div>
+
+<div class="stat">
+✅ Finalizados:
+<span id="finalizados">0</span>
+</div>
+
+<div class="stat">
+🎮 En curso:
+<span id="enCurso">0</span>
+</div>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>🥇 Ranking en Vivo</h2>
+
+<table>
+
+<thead>
+
+<tr>
+<th>Posición</th>
+<th>Participante</th>
+<th>Puntaje</th>
+<th>Tiempo</th>
+</tr>
+
+</thead>
+
+<tbody id="rankingBody">
+
+</tbody>
+
+</table>
+
+</div>
+
+<div class="card">
+
+<h2>📈 Último participante finalizado</h2>
+
+<div id="ultimo">
+
+Esperando resultados...
+
+</div>
+
+</div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+getFirestore,
+collection,
+query,
+orderBy,
+onSnapshot
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+
+apiKey: "AIzaSyD7pXcBMqe7fLKAFVgw7o_u2gXkE1893QE",
+authDomain: "codigo-parto-gamificado.firebaseapp.com",
+projectId: "codigo-parto-gamificado",
+storageBucket: "codigo-parto-gamificado.firebasestorage.app",
+messagingSenderId: "844566506106",
+appId: "1:844566506106:web:3ec87d91c0e798888769c3"
+
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const rankingBody =
+document.getElementById("rankingBody");
+
+const participantesEl =
+document.getElementById("participantes");
+
+const finalizadosEl =
+document.getElementById("finalizados");
+
+const enCursoEl =
+document.getElementById("enCurso");
+
+const ultimoEl =
+document.getElementById("ultimo");
+
+const rankingQuery = query(
+collection(db,"ranking"),
+orderBy("puntaje","desc")
+);
+
+onSnapshot(rankingQuery,(snapshot)=>{
+
+rankingBody.innerHTML="";
+
+let posicion=1;
+let total=0;
+
+let ultimoParticipante=null;
+
+snapshot.forEach((doc)=>{
+
+const d=doc.data();
+
+total++;
+
+ultimoParticipante=d;
+
+let clase="";
+
+if(posicion===1){
+clase="gold";
+}
+else if(posicion===2){
+clase="silver";
+}
+else if(posicion===3){
+clase="bronze";
+}
+
+rankingBody.innerHTML += `
+
+<tr class="${clase}">
+<td>${posicion}</td>
+<td>${d.nombre}</td>
+<td>⭐ ${d.puntaje}</td>
+<td>⏱️ ${d.tiempo}s</td>
+</tr>
+
+`;
+
+posicion++;
+
+});
+
+participantesEl.textContent=total;
+finalizadosEl.textContent=total;
+enCursoEl.textContent="0";
+
+if(ultimoParticipante){
+
+ultimoEl.innerHTML=`
+${ultimoParticipante.nombre}
+<br>
+⭐ ${ultimoParticipante.puntaje} pts
+<br>
+⏱️ ${ultimoParticipante.tiempo} s
+`;
+
+}
+
+});
+
+</script>
+
+</body>
+</html>
