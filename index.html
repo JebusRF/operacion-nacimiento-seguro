@@ -3,26 +3,35 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>🚑 Operación Nacimiento Seguro</title>
 
 <link rel="stylesheet" href="style.css">
-</head>
 
+</head>
 <body>
 
 <div class="container">
 
+<div class="card">
+
 <h1>🚑 Operación Nacimiento Seguro</h1>
+
+<p class="intro">
+Una gestante de término inicia trabajo de parto en la vía pública.
+Tu misión es tomar decisiones seguras hasta la llegada del equipo de emergencia.
+</p>
+
+</div>
 
 <div id="inicio" class="card">
 
-<h2>Desafío Gamificado</h2>
+<h2>Ingreso</h2>
 
-<p>
-Mantén seguras a una madre y su recién nacido en una situación de parto extrahospitalario.
-</p>
-
-<input id="nombre" placeholder="Ingresa tu nombre">
+<input
+id="nombre"
+type="text"
+placeholder="Ingresa tu nombre">
 
 <button id="btnIniciar">
 Comenzar misión
@@ -33,51 +42,72 @@ Comenzar misión
 <div id="juego" class="card hidden">
 
 <div class="topbar">
-<div>⏱️ <span id="cronometro">00:00</span></div>
-<div>⌛ <span id="tiempoPregunta">15</span>s</div>
+
+<div>
+⏱️ Tiempo:
+<span id="cronometro">00:00</span>
 </div>
 
-<h3 id="etapa"></h3>
+<div>
+⌛ Pregunta:
+<span id="tiempoPregunta">20</span>s
+</div>
+
+</div>
 
 <div class="progress-container">
 <div id="barra"></div>
 </div>
 
-<h4 id="avanceTexto"></h4>
+<h3 id="etapa"></h3>
+
+<p id="avanceTexto"></p>
 
 <h2 id="pregunta"></h2>
 
 <div id="opciones"></div>
 
-<div class="badges">
-<h3>🏅 Insignias</h3>
-<ul id="listaInsignias"></ul>
+<div id="feedback" class="hidden feedback">
+<div id="feedbackTitulo"></div>
+<div id="feedbackTexto"></div>
+
+<button id="btnContinuar">
+Continuar
+</button>
+</div>
+
+<div id="insigniasBox">
+
+<h3>🏅 Insignias Desbloqueadas</h3>
+
+<div id="listaInsignias" class="badges"></div>
+
 </div>
 
 </div>
 
 <div id="final" class="card hidden">
 
-<h2>🏆 Resultado Final</h2>
+<h2>🏆 Misión Completada</h2>
 
 <div id="resultado"></div>
 
-<h3>Ranking en Vivo</h3>
+<h3>Ranking de la Misión</h3>
 
 <ol id="ranking"></ol>
 
 <hr>
 
-<h3>🎓 Lo que acabas de experimentar</h3>
+<h3>🎓 ¿Qué acabas de experimentar?</h3>
 
 <ul>
-<li>✅ Narrativa</li>
-<li>✅ Competencia</li>
-<li>✅ Retroalimentación inmediata</li>
-<li>✅ Ranking social</li>
-<li>✅ Progresión</li>
-<li>✅ Insignias</li>
-<li>✅ Presión temporal</li>
+<li>Narrativa</li>
+<li>Competencia</li>
+<li>Retroalimentación inmediata</li>
+<li>Progresión</li>
+<li>Recompensas</li>
+<li>Presión temporal</li>
+<li>Ranking social</li>
 </ul>
 
 </div>
