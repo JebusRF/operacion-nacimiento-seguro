@@ -10,384 +10,512 @@ import {
   limit
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+/* =========================
+   FIREBASE
+========================= */
+
 const firebaseConfig = {
-
-apiKey: "AIzaSyD7pXcBMqe7fLKAFVgw7o_u2gXkE1893QE",
-authDomain: "codigo-parto-gamificado.firebaseapp.com",
-projectId: "codigo-parto-gamificado",
-storageBucket: "codigo-parto-gamificado.firebasestorage.app",
-messagingSenderId: "844566506106",
-appId: "1:844566506106:web:3ec87d91c0e798888769c3"
-
+  apiKey: "AIzaSyD7pXcBMqe7fLKAFVgw7o_u2gXkE1893QE",
+  authDomain: "codigo-parto-gamificado.firebaseapp.com",
+  projectId: "codigo-parto-gamificado",
+  storageBucket: "codigo-parto-gamificado.firebasestorage.app",
+  messagingSenderId: "844566506106",
+  appId: "1:844566506106:web:3ec87d91c0e798888769c3"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-let jugador="";
-let nivel=0;
-let puntaje=0;
+/* =========================
+   CONFIGURACIÓN
+========================= */
 
-let inicioTiempo;
-let cronometro;
-let relojPregunta;
-let segundosPregunta=15;
+const SESION = "MAGISTER_2026";
 
-const insignias=[];
-
-const etapas=[
+const ETAPAS = [
 
 {
-titulo:"🚨 Emergencia Identificada",
-avance:20,
+  titulo: "🚨 Emergencia Identificada",
+  progreso: 20,
+  insignia: "🏅 Primer Respondedor",
 
-pregunta:
-"Observas una embarazada de término con contracciones intensas y pujos involuntarios. ¿Qué haces primero?",
+  pregunta:
+  "Observas una gestante de término con contracciones intensas y pujos involuntarios en una plaza. ¿Qué haces?",
 
-correcta:1,
+  correcta: 0,
 
-explicacion:
-"Activar el 131 permite coordinar ayuda especializada mientras evalúas la situación.",
+  opciones: [
+    "Activar el sistema de emergencia (131)",
+    "Llamar a familiares",
+    "Esperar para observar",
+    "Buscar transporte particular"
+  ],
 
-insignia:"🏅 Primer Respondedor",
-
-opciones:[
-"Llamar familiares",
-"Activar el 131",
-"Esperar",
-"Trasladar inmediatamente"
-]
+  explicacion:
+  "Activar precozmente el 131 permite coordinar recursos especializados mientras evalúas la situación."
 },
 
 {
-titulo:"📞 Coordinación de Ayuda",
-avance:40,
+  titulo: "📞 Coordinación de Ayuda",
+  progreso: 40,
+  insignia: "🏅 Coordinador de Emergencia",
 
-pregunta:
-"La mujer refiere deseos intensos de pujar. ¿Qué debes evaluar?",
+  pregunta:
+  "La mujer dice: 'Siento que mi bebé va a salir ahora'. ¿Qué haces?",
 
-correcta:2,
+  correcta: 2,
 
-explicacion:
-"Lo más importante es determinar si el nacimiento es inminente.",
+  opciones: [
+    "Preguntar previsión",
+    "Buscar documentos",
+    "Evaluar si el nacimiento es inminente",
+    "Esperar a la ambulancia"
+  ],
 
-insignia:"🏅 Coordinador de Emergencia",
-
-opciones:[
-"Su previsión",
-"Número de controles",
-"Si el parto es inminente",
-"Grupo sanguíneo"
-]
+  explicacion:
+  "La prioridad es determinar si el nacimiento ocurrirá antes de la llegada del equipo de emergencia."
 },
 
 {
-titulo:"👶 Nacimiento",
-avance:60,
+  titulo: "👶 Nacimiento",
+  progreso: 60,
+  insignia: "🏅 Asistente del Nacimiento",
 
-pregunta:
-"Compruebas que el bebé nacerá antes que llegue la ambulancia. ¿Cuál es la conducta adecuada?",
+  pregunta:
+  "Compruebas que el nacimiento ocurrirá antes de que llegue ayuda. ¿Qué haces?",
 
-correcta:3,
+  correcta: 3,
 
-explicacion:
-"Se debe favorecer la salida espontánea evitando tracciones o maniobras innecesarias.",
+  opciones: [
+    "Intentar detener el parto",
+    "Aplicar presión abdominal",
+    "Traccionar al recién nacido",
+    "Favorecer la salida espontánea"
+  ],
 
-insignia:"🏅 Asistente del Nacimiento",
-
-opciones:[
-"Retrasar el parto",
-"Empujar abdomen",
-"Tirar del bebé",
-"Favorecer salida espontánea"
-]
+  explicacion:
+  "La conducta más segura es acompañar el nacimiento evitando maniobras innecesarias."
 },
 
 {
-titulo:"🍼 Atención Neonatal",
-avance:80,
+  titulo: "🍼 Atención Neonatal",
+  progreso: 80,
+  insignia: "🏅 Protector Neonatal",
 
-pregunta:
-"El recién nacido llora al nacer. ¿Cuál es la prioridad?",
+  pregunta:
+  "El recién nacido nace vigoroso y llora espontáneamente. ¿Qué haces?",
 
-correcta:0,
+  correcta: 0,
 
-explicacion:
-"La pérdida de calor es uno de los principales riesgos del recién nacido.",
+  opciones: [
+    "Secarlo y prevenir la pérdida de calor",
+    "Bañarlo",
+    "Separarlo de su madre",
+    "Pesarlo"
+  ],
 
-insignia:"🏅 Protector Neonatal",
-
-opciones:[
-"Secar y evitar hipotermia",
-"Pesar al RN",
-"Separarlo de la madre",
-"Bañarlo"
-]
+  explicacion:
+  "La prevención de la hipotermia es una prioridad inmediata del recién nacido."
 },
 
 {
-titulo:"🤱 Cuidados Postparto",
-avance:100,
+  titulo: "🤱 Postparto Seguro",
+  progreso: 100,
+  insignia: "🏅 Guardián Madre-Hijo",
 
-pregunta:
-"Mientras llega la ambulancia, ¿qué debes vigilar?",
+  pregunta:
+  "La ambulancia aún no llega. ¿Qué haces?",
 
-correcta:1,
+  correcta: 1,
 
-explicacion:
-"El sangrado materno y el bienestar neonatal requieren vigilancia continua.",
+  opciones: [
+    "Retirarte del lugar",
+    "Vigilar sangrado materno y bienestar neonatal",
+    "Vigilar solo al recién nacido",
+    "Vigilar solo a la madre"
+  ],
 
-insignia:"🏅 Guardián Madre-Hijo",
-
-opciones:[
-"Documentación",
-"Bienestar materno y neonatal",
-"Ropa de la madre",
-"Alimentación complementaria"
-]
+  explicacion:
+  "Madre y recién nacido requieren observación continua mientras llega ayuda especializada."
 }
 
 ];
 
-document
-.getElementById("btnIniciar")
-.addEventListener("click", iniciarJuego);
+/* =========================
+   VARIABLES
+========================= */
 
-function iniciarJuego(){
+let nombreJugador = "";
+let puntaje = 0;
+let etapaActual = 0;
 
-jugador=
-document.getElementById("nombre").value.trim();
+let inicioMision = null;
 
-if(jugador===""){
-alert("Ingresa tu nombre");
-return;
+let cronometroGeneral = null;
+let cronometroPregunta = null;
+
+let segundosRestantes = 20;
+
+const insignias = [];
+
+/* =========================
+   ELEMENTOS
+========================= */
+
+const btnIniciar = document.getElementById("btnIniciar");
+const btnContinuar = document.getElementById("btnContinuar");
+
+const inicioDiv = document.getElementById("inicio");
+const juegoDiv = document.getElementById("juego");
+const finalDiv = document.getElementById("final");
+
+const etapaEl = document.getElementById("etapa");
+const preguntaEl = document.getElementById("pregunta");
+const opcionesEl = document.getElementById("opciones");
+
+const barraEl = document.getElementById("barra");
+const avanceTextoEl = document.getElementById("avanceTexto");
+
+const cronometroEl = document.getElementById("cronometro");
+const tiempoPreguntaEl = document.getElementById("tiempoPregunta");
+
+const feedbackBox = document.getElementById("feedback");
+const feedbackTitulo = document.getElementById("feedbackTitulo");
+const feedbackTexto = document.getElementById("feedbackTexto");
+
+const resultadoEl = document.getElementById("resultado");
+const rankingEl = document.getElementById("ranking");
+
+const insigniasEl = document.getElementById("listaInsignias");
+
+/* =========================
+   INICIO
+========================= */
+
+btnIniciar.addEventListener("click", iniciarMision);
+
+async function iniciarMision() {
+
+  nombreJugador =
+    document.getElementById("nombre").value.trim();
+
+  if (nombreJugador === "") {
+    alert("Ingresa tu nombre.");
+    return;
+  }
+
+  const participantes =
+    await getDocs(collection(db, "ranking"));
+
+  let existe = false;
+
+  participantes.forEach(doc => {
+
+    const datos = doc.data();
+
+    if (
+      datos.nombre &&
+      datos.nombre.toLowerCase() === nombreJugador.toLowerCase() &&
+      datos.sesion === SESION
+    ) {
+      existe = true;
+    }
+
+  });
+
+  if (existe) {
+
+    alert(
+      "Este participante ya inició o completó la misión."
+    );
+
+    return;
+  }
+
+  inicioMision = Date.now();
+
+  inicioDiv.classList.add("hidden");
+  juegoDiv.classList.remove("hidden");
+
+  cronometroGeneral =
+    setInterval(actualizarCronometro,1000);
+
+  mostrarEtapa();
 }
 
-document
-.getElementById("inicio")
-.classList.add("hidden");
+/* =========================
+   CRONÓMETRO GENERAL
+========================= */
 
-document
-.getElementById("juego")
-.classList.remove("hidden");
+function actualizarCronometro() {
 
-inicioTiempo=Date.now();
+  const segundos =
+    Math.floor((Date.now() - inicioMision) / 1000);
 
-cronometro=
-setInterval(actualizarCronometro,1000);
+  const minutos =
+    String(Math.floor(segundos / 60))
+      .padStart(2,"0");
 
-mostrarNivel();
+  const seg =
+    String(segundos % 60)
+      .padStart(2,"0");
+
+  cronometroEl.textContent =
+    `${minutos}:${seg}`;
+}
+
+/* =========================
+   ETAPAS
+========================= */
+
+function mostrarEtapa() {
+
+  const etapa = ETAPAS[etapaActual];
+
+  etapaEl.textContent = etapa.titulo;
+
+  preguntaEl.textContent =
+    etapa.pregunta;
+
+  barraEl.style.width =
+    etapa.progreso + "%";
+
+  avanceTextoEl.textContent =
+    `${etapa.progreso}% completado`;
+
+  let html = "";
+
+  etapa.opciones.forEach((opcion,indice) => {
+
+    html += `
+    <button class="opcion-btn"
+      data-indice="${indice}">
+      ${opcion}
+    </button>
+    `;
+
+  });
+
+  opcionesEl.innerHTML = html;
+
+  document
+    .querySelectorAll(".opcion-btn")
+    .forEach(btn => {
+
+      btn.addEventListener(
+        "click",
+        () => responder(
+          parseInt(btn.dataset.indice)
+        )
+      );
+
+    });
+
+  segundosRestantes = 20;
+
+  tiempoPreguntaEl.textContent =
+    segundosRestantes;
+
+  feedbackBox.classList.add("hidden");
+
+  clearInterval(cronometroPregunta);
+
+  cronometroPregunta =
+    setInterval(() => {
+
+      segundosRestantes--;
+
+      tiempoPreguntaEl.textContent =
+        segundosRestantes;
+
+      if (segundosRestantes <= 0) {
+
+        clearInterval(
+          cronometroPregunta
+        );
+
+        responder(-1);
+      }
+
+    },1000);
+}
+
+/* =========================
+   RESPUESTA
+========================= */
+
+function responder(indice) {
+
+  clearInterval(cronometroPregunta);
+
+  const etapa =
+    ETAPAS[etapaActual];
+
+  opcionesEl.innerHTML = "";
+
+  feedbackBox.classList.remove("hidden");
+
+  if (indice === etapa.correcta) {
+
+    const bono =
+      segundosRestantes * 5;
+
+    const puntosGanados =
+      100 + bono;
+
+    puntaje += puntosGanados;
+
+    insignias.push(
+      etapa.insignia
+    );
+
+    actualizarInsignias();
+
+    feedbackTitulo.innerHTML =
+      "✅ Decisión Segura";
+
+    feedbackTexto.innerHTML = `
+      <p><strong>+${puntosGanados} puntos</strong></p>
+      <p>${etapa.insignia}</p>
+      <p>${etapa.explicacion}</p>
+    `;
+
+  } else {
+
+    feedbackTitulo.innerHTML =
+      "⚠️ Decisión de Riesgo";
+
+    feedbackTexto.innerHTML = `
+      <p><strong>0 puntos</strong></p>
+      <p>${etapa.explicacion}</p>
+    `;
+  }
+
+  btnContinuar.onclick = () => {
+
+    etapaActual++;
+
+    if (
+      etapaActual < ETAPAS.length
+    ) {
+      mostrarEtapa();
+    } else {
+      finalizarMision();
+    }
+
+  };
+}
+
+/* =========================
+   INSIGNIAS
+========================= */
+
+function actualizarInsignias() {
+
+  insigniasEl.innerHTML = "";
+
+  insignias.forEach(item => {
+
+    const badge =
+      document.createElement("div");
+
+    badge.className = "badge";
+
+    badge.textContent = item;
+
+    insigniasEl.appendChild(badge);
+
+  });
 
 }
 
-function actualizarCronometro(){
+/* =========================
+   FINALIZAR
+========================= */
 
-const t =
-Math.floor((Date.now()-inicioTiempo)/1000);
+async function finalizarMision() {
 
-const m =
-String(Math.floor(t/60)).padStart(2,"0");
+  clearInterval(cronometroGeneral);
 
-const s =
-String(t%60).padStart(2,"0");
+  const tiempoFinal =
+    Math.floor(
+      (Date.now() - inicioMision) / 1000
+    );
 
-document.getElementById("cronometro")
-.textContent=`${m}:${s}`;
+  await addDoc(
+    collection(db,"ranking"),
+    {
+      sesion: SESION,
+      nombre: nombreJugador,
+      puntaje: puntaje,
+      tiempo: tiempoFinal,
+      fecha: new Date()
+    }
+  );
 
+  juegoDiv.classList.add("hidden");
+  finalDiv.classList.remove("hidden");
+
+  resultadoEl.innerHTML = `
+    <h3>${nombreJugador}</h3>
+
+    <p>
+      ⭐ Puntaje:
+      <strong>${puntaje}</strong>
+    </p>
+
+    <p>
+      ⏱️ Tiempo:
+      <strong>${tiempoFinal}s</strong>
+    </p>
+
+    <p>
+      🏅 Insignias:
+      <strong>${insignias.length}/5</strong>
+    </p>
+  `;
+
+  cargarRanking();
 }
 
-function mostrarNivel(){
+/* =========================
+   RANKING
+========================= */
 
-const e=etapas[nivel];
+async function cargarRanking() {
 
-document.getElementById("etapa")
-.textContent=e.titulo;
+  const consulta = query(
+    collection(db,"ranking"),
+    orderBy("puntaje","desc"),
+    orderBy("tiempo","asc"),
+    limit(10)
+  );
 
-document.getElementById("pregunta")
-.textContent=e.pregunta;
+  const jugadores =
+    await getDocs(consulta);
 
-document.getElementById("barra")
-.style.width=e.avance+"%";
+  rankingEl.innerHTML = "";
 
-document.getElementById("avanceTexto")
-.textContent=e.avance+"% completado";
+  let posicion = 1;
 
-let html="";
+  jugadores.forEach(doc => {
 
-e.opciones.forEach((o,i)=>{
+    const d = doc.data();
 
-html+=`
-<button onclick="responder(${i})">
-${o}
-</button>
-`;
+    const li =
+      document.createElement("li");
 
-});
+    li.innerHTML = `
+      <strong>#${posicion}</strong>
+      ${d.nombre}
+      · ⭐ ${d.puntaje}
+      · ⏱️ ${d.tiempo}s
+    `;
 
-document.getElementById("opciones")
-.innerHTML=html;
+    rankingEl.appendChild(li);
 
-segundosPregunta=15;
+    posicion++;
 
-document.getElementById("tiempoPregunta")
-.textContent=segundosPregunta;
-
-clearInterval(relojPregunta);
-
-relojPregunta=setInterval(()=>{
-
-segundosPregunta--;
-
-document.getElementById("tiempoPregunta")
-.textContent=segundosPregunta;
-
-if(segundosPregunta<=0){
-
-clearInterval(relojPregunta);
-
-responder(-1);
-
-}
-
-},1000);
-
-}
-
-window.responder=function(indice){
-
-clearInterval(relojPregunta);
-
-const e=etapas[nivel];
-
-if(indice===e.correcta){
-
-const bonus=segundosPregunta*5;
-
-puntaje += 100 + bonus;
-
-insignias.push(e.insignia);
-
-actualizarInsignias();
-
-alert(
-`✅ Correcto\n\n${e.explicacion}\n\n+${100+bonus} puntos`
-);
-
-}
-else{
-
-alert(
-`❌ Incorrecto\n\n${e.explicacion}`
-);
-
-}
-
-nivel++;
-
-if(nivel<etapas.length){
-
-mostrarNivel();
-
-}
-else{
-
-finalizar();
-
-}
-
-}
-
-function actualizarInsignias(){
-
-document.getElementById("listaInsignias")
-.innerHTML =
-insignias.map(i=>`<li>${i}</li>`).join("");
-
-}
-
-async function finalizar(){
-
-clearInterval(cronometro);
-
-const tiempo =
-Math.floor(
-(Date.now()-inicioTiempo)/1000
-);
-
-const bonusFinal =
-Math.max(
-0,
-300-tiempo
-);
-
-puntaje += bonusFinal;
-
-await addDoc(
-
-collection(db,"ranking"),
-
-{
-nombre:jugador,
-puntaje,
-tiempo,
-fecha:new Date()
-}
-
-);
-
-document
-.getElementById("juego")
-.classList.add("hidden");
-
-document
-.getElementById("final")
-.classList.remove("hidden");
-
-document.getElementById("resultado")
-.innerHTML=`
-
-<h3>${jugador}</h3>
-
-<p>⭐ Puntaje: <b>${puntaje}</b></p>
-
-<p>⏱️ Tiempo: <b>${tiempo}s</b></p>
-
-<p>🏅 Insignias: ${insignias.length}/5</p>
-
-`;
-
-cargarRanking();
-
-}
-
-async function cargarRanking(){
-
-const q=query(
-collection(db,"ranking"),
-orderBy("puntaje","desc"),
-orderBy("tiempo","asc"),
-limit(10)
-);
-
-const datos=await getDocs(q);
-
-let html="";
-
-datos.forEach(doc=>{
-
-const d=doc.data();
-
-html+=`
-<li>
-🏆 ${d.nombre}
- | ⭐ ${d.puntaje}
- | ⏱️ ${d.tiempo}s
-</li>
-`;
-
-});
-
-document.getElementById("ranking")
-.innerHTML=html;
+  });
 
 }
