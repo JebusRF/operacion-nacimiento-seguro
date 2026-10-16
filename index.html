@@ -1,521 +1,120 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  getDocs,
-  query,
-  orderBy,
-  limit
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-/* =========================
-   FIREBASE
-========================= */
-
-const firebaseConfig = {
-  apiKey: "AIzaSyD7pXcBMqe7fLKAFVgw7o_u2gXkE1893QE",
-  authDomain: "codigo-parto-gamificado.firebaseapp.com",
-  projectId: "codigo-parto-gamificado",
-  storageBucket: "codigo-parto-gamificado.firebasestorage.app",
-  messagingSenderId: "844566506106",
-  appId: "1:844566506106:web:3ec87d91c0e798888769c3"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-/* =========================
-   CONFIGURACIÓN
-========================= */
-
-const SESION = "MAGISTER_2026";
-
-const ETAPAS = [
-
-{
-  titulo: "🚨 Emergencia Identificada",
-  progreso: 20,
-  insignia: "🏅 Primer Respondedor",
-
-  pregunta:
-  "Observas una gestante de término con contracciones intensas y pujos involuntarios en una plaza. ¿Qué haces?",
-
-  correcta: 0,
-
-  opciones: [
-    "Activar el sistema de emergencia (131)",
-    "Llamar a familiares",
-    "Esperar para observar",
-    "Buscar transporte particular"
-  ],
-
-  explicacion:
-  "Activar precozmente el 131 permite coordinar recursos especializados mientras evalúas la situación."
-},
-
-{
-  titulo: "📞 Coordinación de Ayuda",
-  progreso: 40,
-  insignia: "🏅 Coordinador de Emergencia",
-
-  pregunta:
-  "La mujer dice: 'Siento que mi bebé va a salir ahora'. ¿Qué haces?",
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  correcta: 2,
-
-  opciones: [
-    "Preguntar previsión",
-    "Buscar documentos",
-    "Evaluar si el nacimiento es inminente",
-    "Esperar a la ambulancia"
-  ],
-
-  explicacion:
-  "La prioridad es determinar si el nacimiento ocurrirá antes de la llegada del equipo de emergencia."
-},
-
-{
-  titulo: "👶 Nacimiento",
-  progreso: 60,
-  insignia: "🏅 Asistente del Nacimiento",
+<title>🚑 Operación Nacimiento Seguro</title>
 
-  pregunta:
-  "Compruebas que el nacimiento ocurrirá antes de que llegue ayuda. ¿Qué haces?",
+<link rel="stylesheet" href="style.css">
 
-  correcta: 3,
+</head>
+<body>
 
-  opciones: [
-    "Intentar detener el parto",
-    "Aplicar presión abdominal",
-    "Traccionar al recién nacido",
-    "Favorecer la salida espontánea"
-  ],
+<div class="container">
 
-  explicacion:
-  "La conducta más segura es acompañar el nacimiento evitando maniobras innecesarias."
-},
+<div class="card">
 
-{
-  titulo: "🍼 Atención Neonatal",
-  progreso: 80,
-  insignia: "🏅 Protector Neonatal",
+<h1>🚑 Operación Nacimiento Seguro</h1>
 
-  pregunta:
-  "El recién nacido nace vigoroso y llora espontáneamente. ¿Qué haces?",
+<p class="intro">
+Una gestante de término inicia trabajo de parto en la vía pública.
+Tu misión es tomar decisiones seguras hasta la llegada del equipo de emergencia.
+</p>
 
-  correcta: 0,
+</div>
 
-  opciones: [
-    "Secarlo y prevenir la pérdida de calor",
-    "Bañarlo",
-    "Separarlo de su madre",
-    "Pesarlo"
-  ],
+<div id="inicio" class="card">
 
-  explicacion:
-  "La prevención de la hipotermia es una prioridad inmediata del recién nacido."
-},
+<h2>Ingreso</h2>
 
-{
-  titulo: "🤱 Postparto Seguro",
-  progreso: 100,
-  insignia: "🏅 Guardián Madre-Hijo",
+<input
+id="nombre"
+type="text"
+placeholder="Ingresa tu nombre">
 
-  pregunta:
-  "La ambulancia aún no llega. ¿Qué haces?",
+<button id="btnIniciar">
+Comenzar misión
+</button>
 
-  correcta: 1,
+</div>
 
-  opciones: [
-    "Retirarte del lugar",
-    "Vigilar sangrado materno y bienestar neonatal",
-    "Vigilar solo al recién nacido",
-    "Vigilar solo a la madre"
-  ],
+<div id="juego" class="card hidden">
 
-  explicacion:
-  "Madre y recién nacido requieren observación continua mientras llega ayuda especializada."
-}
+<div class="topbar">
 
-];
+<div>
+⏱️ Tiempo:
+<span id="cronometro">00:00</span>
+</div>
 
-/* =========================
-   VARIABLES
-========================= */
+<div>
+⌛ Pregunta:
+<span id="tiempoPregunta">20</span>s
+</div>
 
-let nombreJugador = "";
-let puntaje = 0;
-let etapaActual = 0;
+</div>
 
-let inicioMision = null;
+<div class="progress-container">
+<div id="barra"></div>
+</div>
 
-let cronometroGeneral = null;
-let cronometroPregunta = null;
+<h3 id="etapa"></h3>
 
-let segundosRestantes = 20;
+<p id="avanceTexto"></p>
 
-const insignias = [];
+<h2 id="pregunta"></h2>
 
-/* =========================
-   ELEMENTOS
-========================= */
+<div id="opciones"></div>
 
-const btnIniciar = document.getElementById("btnIniciar");
-const btnContinuar = document.getElementById("btnContinuar");
+<div id="feedback" class="hidden feedback">
+<div id="feedbackTitulo"></div>
+<div id="feedbackTexto"></div>
 
-const inicioDiv = document.getElementById("inicio");
-const juegoDiv = document.getElementById("juego");
-const finalDiv = document.getElementById("final");
+<button id="btnContinuar">
+Continuar
+</button>
+</div>
 
-const etapaEl = document.getElementById("etapa");
-const preguntaEl = document.getElementById("pregunta");
-const opcionesEl = document.getElementById("opciones");
+<div id="insigniasBox">
 
-const barraEl = document.getElementById("barra");
-const avanceTextoEl = document.getElementById("avanceTexto");
+<h3>🏅 Insignias Desbloqueadas</h3>
 
-const cronometroEl = document.getElementById("cronometro");
-const tiempoPreguntaEl = document.getElementById("tiempoPregunta");
+<div id="listaInsignias" class="badges"></div>
 
-const feedbackBox = document.getElementById("feedback");
-const feedbackTitulo = document.getElementById("feedbackTitulo");
-const feedbackTexto = document.getElementById("feedbackTexto");
+</div>
 
-const resultadoEl = document.getElementById("resultado");
-const rankingEl = document.getElementById("ranking");
+</div>
 
-const insigniasEl = document.getElementById("listaInsignias");
+<div id="final" class="card hidden">
 
-/* =========================
-   INICIO
-========================= */
+<h2>🏆 Misión Completada</h2>
 
-btnIniciar.addEventListener("click", iniciarMision);
+<div id="resultado"></div>
 
-async function iniciarMision() {
+<h3>Ranking de la Misión</h3>
 
-  nombreJugador =
-    document.getElementById("nombre").value.trim();
+<ol id="ranking"></ol>
 
-  if (nombreJugador === "") {
-    alert("Ingresa tu nombre.");
-    return;
-  }
+<hr>
 
-  const participantes =
-    await getDocs(collection(db, "ranking"));
+<h3>🎓 ¿Qué acabas de experimentar?</h3>
 
-  let existe = false;
+<ul>
+<li>Narrativa</li>
+<li>Competencia</li>
+<li>Retroalimentación inmediata</li>
+<li>Progresión</li>
+<li>Recompensas</li>
+<li>Presión temporal</li>
+<li>Ranking social</li>
+</ul>
 
-  participantes.forEach(doc => {
+</div>
 
-    const datos = doc.data();
+</div>
 
-    if (
-      datos.nombre &&
-      datos.nombre.toLowerCase() === nombreJugador.toLowerCase() &&
-      datos.sesion === SESION
-    ) {
-      existe = true;
-    }
+<script type="module" src="app.js"></script>
 
-  });
-
-  if (existe) {
-
-    alert(
-      "Este participante ya inició o completó la misión."
-    );
-
-    return;
-  }
-
-  inicioMision = Date.now();
-
-  inicioDiv.classList.add("hidden");
-  juegoDiv.classList.remove("hidden");
-
-  cronometroGeneral =
-    setInterval(actualizarCronometro,1000);
-
-  mostrarEtapa();
-}
-
-/* =========================
-   CRONÓMETRO GENERAL
-========================= */
-
-function actualizarCronometro() {
-
-  const segundos =
-    Math.floor((Date.now() - inicioMision) / 1000);
-
-  const minutos =
-    String(Math.floor(segundos / 60))
-      .padStart(2,"0");
-
-  const seg =
-    String(segundos % 60)
-      .padStart(2,"0");
-
-  cronometroEl.textContent =
-    `${minutos}:${seg}`;
-}
-
-/* =========================
-   ETAPAS
-========================= */
-
-function mostrarEtapa() {
-
-  const etapa = ETAPAS[etapaActual];
-
-  etapaEl.textContent = etapa.titulo;
-
-  preguntaEl.textContent =
-    etapa.pregunta;
-
-  barraEl.style.width =
-    etapa.progreso + "%";
-
-  avanceTextoEl.textContent =
-    `${etapa.progreso}% completado`;
-
-  let html = "";
-
-  etapa.opciones.forEach((opcion,indice) => {
-
-    html += `
-    <button class="opcion-btn"
-      data-indice="${indice}">
-      ${opcion}
-    </button>
-    `;
-
-  });
-
-  opcionesEl.innerHTML = html;
-
-  document
-    .querySelectorAll(".opcion-btn")
-    .forEach(btn => {
-
-      btn.addEventListener(
-        "click",
-        () => responder(
-          parseInt(btn.dataset.indice)
-        )
-      );
-
-    });
-
-  segundosRestantes = 20;
-
-  tiempoPreguntaEl.textContent =
-    segundosRestantes;
-
-  feedbackBox.classList.add("hidden");
-
-  clearInterval(cronometroPregunta);
-
-  cronometroPregunta =
-    setInterval(() => {
-
-      segundosRestantes--;
-
-      tiempoPreguntaEl.textContent =
-        segundosRestantes;
-
-      if (segundosRestantes <= 0) {
-
-        clearInterval(
-          cronometroPregunta
-        );
-
-        responder(-1);
-      }
-
-    },1000);
-}
-
-/* =========================
-   RESPUESTA
-========================= */
-
-function responder(indice) {
-
-  clearInterval(cronometroPregunta);
-
-  const etapa =
-    ETAPAS[etapaActual];
-
-  opcionesEl.innerHTML = "";
-
-  feedbackBox.classList.remove("hidden");
-
-  if (indice === etapa.correcta) {
-
-    const bono =
-      segundosRestantes * 5;
-
-    const puntosGanados =
-      100 + bono;
-
-    puntaje += puntosGanados;
-
-    insignias.push(
-      etapa.insignia
-    );
-
-    actualizarInsignias();
-
-    feedbackTitulo.innerHTML =
-      "✅ Decisión Segura";
-
-    feedbackTexto.innerHTML = `
-      <p><strong>+${puntosGanados} puntos</strong></p>
-      <p>${etapa.insignia}</p>
-      <p>${etapa.explicacion}</p>
-    `;
-
-  } else {
-
-    feedbackTitulo.innerHTML =
-      "⚠️ Decisión de Riesgo";
-
-    feedbackTexto.innerHTML = `
-      <p><strong>0 puntos</strong></p>
-      <p>${etapa.explicacion}</p>
-    `;
-  }
-
-  btnContinuar.onclick = () => {
-
-    etapaActual++;
-
-    if (
-      etapaActual < ETAPAS.length
-    ) {
-      mostrarEtapa();
-    } else {
-      finalizarMision();
-    }
-
-  };
-}
-
-/* =========================
-   INSIGNIAS
-========================= */
-
-function actualizarInsignias() {
-
-  insigniasEl.innerHTML = "";
-
-  insignias.forEach(item => {
-
-    const badge =
-      document.createElement("div");
-
-    badge.className = "badge";
-
-    badge.textContent = item;
-
-    insigniasEl.appendChild(badge);
-
-  });
-
-}
-
-/* =========================
-   FINALIZAR
-========================= */
-
-async function finalizarMision() {
-
-  clearInterval(cronometroGeneral);
-
-  const tiempoFinal =
-    Math.floor(
-      (Date.now() - inicioMision) / 1000
-    );
-
-  await addDoc(
-    collection(db,"ranking"),
-    {
-      sesion: SESION,
-      nombre: nombreJugador,
-      puntaje: puntaje,
-      tiempo: tiempoFinal,
-      fecha: new Date()
-    }
-  );
-
-  juegoDiv.classList.add("hidden");
-  finalDiv.classList.remove("hidden");
-
-  resultadoEl.innerHTML = `
-    <h3>${nombreJugador}</h3>
-
-    <p>
-      ⭐ Puntaje:
-      <strong>${puntaje}</strong>
-    </p>
-
-    <p>
-      ⏱️ Tiempo:
-      <strong>${tiempoFinal}s</strong>
-    </p>
-
-    <p>
-      🏅 Insignias:
-      <strong>${insignias.length}/5</strong>
-    </p>
-  `;
-
-  cargarRanking();
-}
-
-/* =========================
-   RANKING
-========================= */
-
-async function cargarRanking() {
-
-  const consulta = query(
-    collection(db,"ranking"),
-    orderBy("puntaje","desc"),
-    orderBy("tiempo","asc"),
-    limit(10)
-  );
-
-  const jugadores =
-    await getDocs(consulta);
-
-  rankingEl.innerHTML = "";
-
-  let posicion = 1;
-
-  jugadores.forEach(doc => {
-
-    const d = doc.data();
-
-    const li =
-      document.createElement("li");
-
-    li.innerHTML = `
-      <strong>#${posicion}</strong>
-      ${d.nombre}
-      · ⭐ ${d.puntaje}
-      · ⏱️ ${d.tiempo}s
-    `;
-
-    rankingEl.appendChild(li);
-
-    posicion++;
-
-  });
-
-}
+</body>
+</html>
