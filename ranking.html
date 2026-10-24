@@ -106,6 +106,64 @@ font-weight:bold;
 color:#2e7d32;
 }
 
+/* ==========================
+   PROGRESO GENERAL
+========================== */
+
+.barra-container{
+
+    width:100%;
+
+    height:40px;
+
+    background:#dfe3e8;
+
+    border-radius:25px;
+
+    overflow:hidden;
+
+    margin-top:15px;
+
+}
+
+#barraProgreso{
+
+    width:0%;
+
+    height:100%;
+
+    background:linear-gradient(
+        90deg,
+        #2E7D32,
+        #66BB6A
+    );
+
+    transition:1s;
+
+}
+
+#porcentajeProgreso{
+
+    text-align:center;
+
+    color:#2E7D32;
+
+    font-size:32px;
+
+    margin-top:15px;
+
+}
+
+#progresoTexto{
+
+    font-size:20px;
+
+    text-align:center;
+
+    font-weight:bold;
+
+}
+    
 </style>
 </head>
 
@@ -231,63 +289,102 @@ orderBy("puntaje","desc")
 
 onSnapshot(rankingQuery,(snapshot)=>{
 
-rankingBody.innerHTML="";
+    rankingBody.innerHTML="";
 
-let posicion=1;
-let total=0;
+    let posicion=1;
 
-let ultimoParticipante=null;
+    let total=0;
 
-snapshot.forEach((doc)=>{
+    let ultimoParticipante=null;
 
-const d=doc.data();
+    snapshot.forEach((doc)=>{
 
-total++;
+        const d=doc.data();
 
-ultimoParticipante=d;
+        total++;
 
-let clase="";
+        ultimoParticipante=d;
 
-if(posicion===1){
-clase="gold";
-}
-else if(posicion===2){
-clase="silver";
-}
-else if(posicion===3){
-clase="bronze";
-}
+        let clase="";
 
-rankingBody.innerHTML += `
+        if(posicion===1){
 
-<tr class="${clase}">
-<td>${posicion}</td>
-<td>${d.nombre}</td>
-<td>⭐ ${d.puntaje}</td>
-<td>⏱️ ${d.tiempo}s</td>
-</tr>
+            clase="gold";
 
-`;
+        }
+        else if(posicion===2){
 
-posicion++;
+            clase="silver";
 
-});
+        }
+        else if(posicion===3){
 
-participantesEl.textContent=total;
-finalizadosEl.textContent=total;
-enCursoEl.textContent="0";
+            clase="bronze";
 
-if(ultimoParticipante){
+        }
 
-ultimoEl.innerHTML=`
-${ultimoParticipante.nombre}
-<br>
-⭐ ${ultimoParticipante.puntaje} pts
-<br>
-⏱️ ${ultimoParticipante.tiempo} s
-`;
+        rankingBody.innerHTML += `
 
-}
+        <tr class="${clase}">
+            <td>${posicion}</td>
+            <td>${d.nombre}</td>
+            <td>⭐ ${d.puntaje}</td>
+            <td>⏱️ ${d.tiempo}s</td>
+        </tr>
+
+        `;
+
+        posicion++;
+
+    });
+
+    participantesEl.textContent = total;
+
+    finalizadosEl.textContent = total;
+
+    enCursoEl.textContent = "0";
+
+    const participantesEsperados = 30;
+
+    const porcentaje = Math.min(
+        Math.round(
+            (total / participantesEsperados) * 100
+        ),
+        100
+    );
+
+    document.getElementById(
+        "barraProgreso"
+    ).style.width =
+    porcentaje + "%";
+
+    document.getElementById(
+        "porcentajeProgreso"
+    ).textContent =
+    porcentaje + "%";
+
+    document.getElementById(
+        "progresoTexto"
+    ).textContent =
+    `${total} de ${participantesEsperados} participantes finalizados`;
+
+    if(ultimoParticipante){
+
+        ultimoEl.innerHTML=`
+
+        ${ultimoParticipante.nombre}
+
+        <br>
+
+        ⭐ ${ultimoParticipante.puntaje} pts
+
+        <br>
+
+        ⏱️ ${ultimoParticipante.tiempo} s
+
+        `;
+
+    }
 
 });
 
