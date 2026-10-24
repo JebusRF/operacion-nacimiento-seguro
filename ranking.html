@@ -1,29 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<div class="card">
-
-    <h2>📊 Progreso General</h2>
-
-    <p id="progresoTexto">
-        Esperando participantes...
-    </p>
-
-    <div class="barra-container">
-
-        <div id="barraProgreso"></div>
-
-    </div>
-
-    <h3 id="porcentajeProgreso">
-        0%
-    </h3>
-
-</div>
-  
 <title>🏆 Ranking en Vivo</title>
 
 <style>
@@ -36,7 +18,7 @@ padding:20px;
 }
 
 .container{
-max-width:1000px;
+max-width:1200px;
 margin:auto;
 }
 
@@ -58,7 +40,7 @@ display:flex;
 gap:20px;
 justify-content:center;
 flex-wrap:wrap;
-margin-bottom:20px;
+margin-bottom:25px;
 }
 
 .stat{
@@ -67,6 +49,65 @@ padding:15px 25px;
 border-radius:12px;
 font-size:20px;
 font-weight:bold;
+}
+
+label{
+font-weight:bold;
+display:block;
+margin-bottom:10px;
+}
+
+#participantesEsperados{
+width:120px;
+padding:10px;
+font-size:20px;
+text-align:center;
+}
+
+.barra-container{
+
+width:100%;
+
+height:50px;
+
+background:#dfe3e8;
+
+border-radius:30px;
+
+overflow:hidden;
+
+margin-top:20px;
+
+}
+
+#barraProgreso{
+
+width:0%;
+
+height:100%;
+
+background:linear-gradient(
+90deg,
+#2E7D32,
+#66BB6A
+);
+
+transition:1s;
+
+}
+
+#porcentajeProgreso{
+
+text-align:center;
+
+font-size:36px;
+
+font-weight:bold;
+
+color:#2E7D32;
+
+margin-top:15px;
+
 }
 
 table{
@@ -101,70 +142,25 @@ background:#fff3e0;
 }
 
 #ultimo{
-font-size:20px;
+font-size:22px;
 font-weight:bold;
 color:#2e7d32;
 }
 
-/* ==========================
-   PROGRESO GENERAL
-========================== */
+@media(max-width:768px){
 
-.barra-container{
+.stats{
+flex-direction:column;
+}
 
-    width:100%;
-
-    height:40px;
-
-    background:#dfe3e8;
-
-    border-radius:25px;
-
-    overflow:hidden;
-
-    margin-top:15px;
+.stat{
+text-align:center;
+}
 
 }
 
-#barraProgreso{
-
-    width:0%;
-
-    height:100%;
-
-    background:linear-gradient(
-        90deg,
-        #2E7D32,
-        #66BB6A
-    );
-
-    transition:1s;
-
-}
-
-#porcentajeProgreso{
-
-    text-align:center;
-
-    color:#2E7D32;
-
-    font-size:32px;
-
-    margin-top:15px;
-
-}
-
-#progresoTexto{
-
-    font-size:20px;
-
-    text-align:center;
-
-    font-weight:bold;
-
-}
-    
 </style>
+
 </head>
 
 <body>
@@ -195,6 +191,28 @@ color:#2e7d32;
 🎮 En curso:
 <span id="enCurso">0</span>
 </div>
+
+</div>
+
+<label>
+Participantes esperados
+</label>
+
+<input
+type="number"
+id="participantesEsperados"
+min="1"
+value="20">
+
+<div class="barra-container">
+
+<div id="barraProgreso"></div>
+
+</div>
+
+<div id="porcentajeProgreso">
+
+0%
 
 </div>
 
@@ -241,8 +259,7 @@ Esperando resultados...
 
 <script type="module">
 
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
 getFirestore,
@@ -265,6 +282,7 @@ appId: "1:844566506106:web:3ec87d91c0e798888769c3"
 };
 
 const app = initializeApp(firebaseConfig);
+
 const db = getFirestore(app);
 
 const rankingBody =
@@ -282,6 +300,68 @@ document.getElementById("enCurso");
 const ultimoEl =
 document.getElementById("ultimo");
 
+const barraProgreso =
+document.getElementById("barraProgreso");
+
+const porcentajeProgreso =
+document.getElementById("porcentajeProgreso");
+
+const participantesEsperadosEl =
+document.getElementById("participantesEsperados");
+
+const guardado =
+localStorage.getItem(
+"participantesEsperados"
+);
+
+if(guardado){
+
+participantesEsperadosEl.value =
+guardado;
+
+}
+
+participantesEsperadosEl.addEventListener(
+"change",
+()=>{
+
+localStorage.setItem(
+"participantesEsperados",
+participantesEsperadosEl.value
+);
+
+actualizarProgreso(
+parseInt(
+finalizadosEl.textContent
+)||0
+);
+
+}
+);
+
+function actualizarProgreso(finalizados){
+
+const esperados =
+parseInt(
+participantesEsperadosEl.value
+) || 1;
+
+const porcentaje =
+Math.min(
+Math.round(
+(finalizados / esperados)*100
+),
+100
+);
+
+barraProgreso.style.width =
+porcentaje + "%";
+
+porcentajeProgreso.textContent =
+porcentaje + "%";
+
+}
+
 const rankingQuery = query(
 collection(db,"ranking"),
 orderBy("puntaje","desc")
@@ -289,102 +369,77 @@ orderBy("puntaje","desc")
 
 onSnapshot(rankingQuery,(snapshot)=>{
 
-    rankingBody.innerHTML="";
+rankingBody.innerHTML="";
 
-    let posicion=1;
+let posicion=1;
 
-    let total=0;
+let total=0;
 
-    let ultimoParticipante=null;
+let ultimoParticipante=null;
 
-    snapshot.forEach((doc)=>{
+snapshot.forEach((doc)=>{
 
-        const d=doc.data();
+const d=doc.data();
 
-        total++;
+total++;
 
-        ultimoParticipante=d;
+ultimoParticipante=d;
 
-        let clase="";
+let clase="";
 
-        if(posicion===1){
+if(posicion===1){
+clase="gold";
+}
+else if(posicion===2){
+clase="silver";
+}
+else if(posicion===3){
+clase="bronze";
+}
 
-            clase="gold";
+rankingBody.innerHTML += `
 
-        }
-        else if(posicion===2){
+<tr class="${clase}">
+<td>${posicion}</td>
+<td>${d.nombre}</td>
+<td>⭐ ${d.puntaje}</td>
+<td>⏱️ ${d.tiempo}s</td>
+</tr>
 
-            clase="silver";
+`;
 
-        }
-        else if(posicion===3){
+posicion++;
 
-            clase="bronze";
+});
 
-        }
+participantesEl.textContent =
+total;
 
-        rankingBody.innerHTML += `
+finalizadosEl.textContent =
+total;
 
-        <tr class="${clase}">
-            <td>${posicion}</td>
-            <td>${d.nombre}</td>
-            <td>⭐ ${d.puntaje}</td>
-            <td>⏱️ ${d.tiempo}s</td>
-        </tr>
+enCursoEl.textContent =
+"0";
 
-        `;
+actualizarProgreso(total);
 
-        posicion++;
+if(ultimoParticipante){
 
-    });
+ultimoEl.innerHTML = `
 
-    participantesEl.textContent = total;
+${ultimoParticipante.nombre}
 
-    finalizadosEl.textContent = total;
+<br>
 
-    enCursoEl.textContent = "0";
+⭐ ${ultimoParticipante.puntaje} pts
 
-    const participantesEsperados = 30;
+<br>
 
-    const porcentaje = Math.min(
-        Math.round(
-            (total / participantesEsperados) * 100
-        ),
-        100
-    );
+⏱️ ${ultimoParticipante.tiempo}s
 
-    document.getElementById(
-        "barraProgreso"
-    ).style.width =
-    porcentaje + "%";
+`;
 
-    document.getElementById(
-        "porcentajeProgreso"
-    ).textContent =
-    porcentaje + "%";
-
-    document.getElementById(
-        "progresoTexto"
-    ).textContent =
-    `${total} de ${participantesEsperados} participantes finalizados`;
-
-    if(ultimoParticipante){
-
-        ultimoEl.innerHTML=`
-
-        ${ultimoParticipante.nombre}
-
-        <br>
-
-        ⭐ ${ultimoParticipante.puntaje} pts
-
-        <br>
-
-        ⏱️ ${ultimoParticipante.tiempo} s
-
-        `;
-
-    }
+}
 
 });
 
