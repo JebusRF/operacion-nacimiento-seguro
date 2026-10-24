@@ -156,8 +156,6 @@ let cronometroPregunta = null;
 
 let segundosRestantes = 20;
 
-const insignias = [];
-
 /* =========================
    ELEMENTOS
 ========================= */
@@ -185,8 +183,6 @@ const feedbackTexto = document.getElementById("feedbackTexto");
 
 const resultadoEl = document.getElementById("resultado");
 const rankingEl = document.getElementById("ranking");
-
-const insigniasEl = document.getElementById("listaInsignias");
 
 /* =========================
    INICIO
@@ -355,32 +351,27 @@ function responder(indice) {
 
   feedbackBox.classList.remove("hidden");
 
-  if (indice === etapa.correcta) {
+if (indice === etapa.correcta) {
 
-    const bono =
-      segundosRestantes * 5;
+  const bono =
+    segundosRestantes * 5;
 
-    const puntosGanados =
-      100 + bono;
+  const puntosGanados =
+    100 + bono;
 
-    puntaje += puntosGanados;
+  puntaje += puntosGanados;
 
-    insignias.push(
-      etapa.insignia
-    );
+  feedbackTitulo.innerHTML =
+    "✅ Decisión Segura";
 
-    actualizarInsignias();
-
-    feedbackTitulo.innerHTML =
-      "✅ Decisión Segura";
-
-    feedbackTexto.innerHTML = `
+  feedbackTexto.innerHTML = `
       <p><strong>+${puntosGanados} puntos</strong></p>
-      <p>${etapa.insignia}</p>
       <p>${etapa.explicacion}</p>
     `;
 
-  } else {
+}
+  
+  else {
 
     feedbackTitulo.innerHTML =
       "⚠️ Decisión de Riesgo";
@@ -404,29 +395,6 @@ function responder(indice) {
     }
 
   };
-}
-
-/* =========================
-   INSIGNIAS
-========================= */
-
-function actualizarInsignias() {
-
-  insigniasEl.innerHTML = "";
-
-  insignias.forEach(item => {
-
-    const badge =
-      document.createElement("div");
-
-    badge.className = "badge";
-
-    badge.textContent = item;
-
-    insigniasEl.appendChild(badge);
-
-  });
-
 }
 
 /* =========================
@@ -476,7 +444,7 @@ setTimeout(() => {
     origin: { x: 1 }
   });
 }, 500);
-  resultadoEl.innerHTML = `
+ resultadoEl.innerHTML = `
     <h3>${nombreJugador}</h3>
 
     <p>
@@ -487,11 +455,6 @@ setTimeout(() => {
     <p>
       ⏱️ Tiempo:
       <strong>${tiempoFinal}s</strong>
-    </p>
-
-    <p>
-      🏅 Insignias:
-      <strong>${insignias.length}/5</strong>
     </p>
   `;
 
