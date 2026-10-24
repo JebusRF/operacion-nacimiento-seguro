@@ -227,15 +227,19 @@ total++;
 ultimoParticipante=d;
 
 let clase="";
+let insignia="";
 
 if(posicion===1){
-clase="gold";
+   clase="gold";
+   insignia="🥇 Líder Clínico";
 }
 else if(posicion===2){
-clase="silver";
+   clase="silver";
+   insignia="🥈 Excelente Desempeño";
 }
 else if(posicion===3){
-clase="bronze";
+   clase="bronze";
+   insignia="🥉 Buen Desempeño";
 }
 
 rankingBody.innerHTML += `
@@ -245,6 +249,7 @@ rankingBody.innerHTML += `
 <td>${d.nombre}</td>
 <td>⭐ ${d.puntaje}</td>
 <td>⏱️ ${d.tiempo}s</td>
+<td>${insignia}</td>
 </tr>
 
 `;
