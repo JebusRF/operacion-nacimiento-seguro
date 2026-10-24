@@ -131,11 +131,10 @@ color:#2e7d32;
 <thead>
 
 <tr>
-    <th>Posición</th>
-    <th>Participante</th>
-    <th>Puntaje</th>
-    <th>Tiempo</th>
-    <th>Insignia</th>
+<th>Posición</th>
+<th>Participante</th>
+<th>Puntaje</th>
+<th>Tiempo</th>
 </tr>
 
 </thead>
@@ -228,19 +227,15 @@ total++;
 ultimoParticipante=d;
 
 let clase="";
-let insignia="";
 
 if(posicion===1){
-   clase="gold";
-   insignia="🥇 Líder Clínico";
+clase="gold";
 }
 else if(posicion===2){
-   clase="silver";
-   insignia="🥈 Excelente Desempeño";
+clase="silver";
 }
 else if(posicion===3){
-   clase="bronze";
-   insignia="🥉 Buen Desempeño";
+clase="bronze";
 }
 
 rankingBody.innerHTML += `
@@ -250,7 +245,6 @@ rankingBody.innerHTML += `
 <td>${d.nombre}</td>
 <td>⭐ ${d.puntaje}</td>
 <td>⏱️ ${d.tiempo}s</td>
-<td>${insignia}</td>
 </tr>
 
 `;
